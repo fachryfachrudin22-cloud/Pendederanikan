@@ -1,0 +1,68 @@
+<!--
+File: pendederan_versions.html
+Contains two ready-to-use website versions for "Sistem Pendederan Ikan":
+
+
+A) Offline static version (localStorage-only) — ready to upload to GitHub Pages
+B) Online Firebase version (Realtime DB) — needs Firebase project config to work
+
+
+Save this single file and open in a code editor. Each version is separated by HTML comments.
+-->
+
+
+<!------------------------------------------------------------------------------------------------->
+<!-- A. OFFLINE VERSION (localStorage) - Save as index-offline.html or use directly -->
+<!------------------------------------------------------------------------------------------------->
+
+
+<!-- Offline version start -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pendederan Ikan — Offline (localStorage)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style> @media print { .no-print{display:none;} } </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-green-50 min-h-screen">
+<div class="container mx-auto px-4 py-8">
+<div class="bg-white p-6 rounded-lg shadow-md mb-6 flex justify-between items-center">
+<div>
+<h1 class="text-2xl font-bold">Sistem Pendederan Ikan (Offline)</h1>
+<p class="text-sm text-gray-600">Local: data disimpan di browser (localStorage). Cocok untuk GitHub Pages.</p>
+</div>
+<div class="space-x-2 no-print">
+<button id="printBtn" class="bg-gray-600 text-white px-3 py-2 rounded">Print</button>
+<button id="exportAllBtn" class="bg-purple-600 text-white px-3 py-2 rounded">Export Semua (CSV)</button>
+<button id="shareWhatsappAll" class="bg-green-500 text-white px-3 py-2 rounded">Share ke WhatsApp</button>
+</div>
+</div>
+
+
+<!-- Simple login (admin1/admin2/admin3) -->
+<div class="bg-white p-5 rounded-lg shadow-md mb-6 no-print">
+<div class="flex gap-4 items-center">
+<div class="flex-1">
+<label class="text-sm font-medium">Login Admin (demo)</label>
+<div class="flex gap-2 mt-2">
+<select id="adminSelect" class="border rounded px-3 py-2">
+<option value="">Pilih Admin</option>
+<option value="admin1">admin1</option>
+<option value="admin2">admin2</option>
+<option value="admin3">admin3</option>
+</select>
+<button id="loginBtn" class="bg-blue-600 text-white px-3 py-2 rounded">Login</button>
+<button id="logoutBtn" class="bg-red-500 text-white px-3 py-2 rounded">Logout</button>
+</div>
+<p id="loginInfo" class="text-xs text-gray-500 mt-2">Status: belum login</p>
+</div>
+<div class="w-1/3 text-right">
+<button id="openAdd" class="bg-green-600 text-white px-4 py-2 rounded">Tambah Data</button>
+</div>
+</div>
+</div>
+
+
+</html>
