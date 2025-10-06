@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Pendederan Ikan</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    table, th, td { border: 1px solid #ccc; }
+    th, td { padding: 8px; text-align: center; }
+    button { margin: 5px; padding: 5px 10px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<h2>Sistem Pendederan Ikan</h2>
+
+<div>
+  <label>Login Admin: 
+    <select id="adminSelect2">
+      <option value="">-- Pilih Admin --</option>
+      <option value="admin1">admin1</option>
+      <option value="admin2">admin2</option>
+      <option value="admin3">admin3</option>
+    </select>
+  </label>
+  <button id="loginBtn2">Login</button>
+  <button id="logoutBtn2">Logout</button>
+  <span id="loginInfo2">Belum login</span>
+</div>
+
+<hr>
+
+<!-- Pendederan 1 -->
+<h3>Pendederan 1</h3>
+<button id="openAdd2">Tambah Data</button>
+<button id="export1b">Export CSV</button>
+<button id="share1b">Share WA</button>
+<table id="tabelPendederan1">
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>Asal Kolam Induk</th>
+      <th>Hasil Panen Larva</th>
+      <th>Kolam Pendederan 1</th>
+      <th>Tanggal Tebar Larva</th>
+      <th>Tanggal Panen</th>
+      <th>SR (%)</th>
+      <th>Dibuat Oleh</th>
+    </tr>
+  </thead>
+  <tbody id="t2b"></tbody>
+</table>
+
+<!-- Pendederan 2 -->
+<h3>Pendederan 2</h3>
+<button id="export2b">Export CSV</button>
+<button id="share2b">Share WA</button>
+<table id="tabelPendederan2">
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>Asal Kolam Pendederan 1</th>
+      <th>Hasil Panen Pendederan 1</th>
+      <th>SR (%)</th>
+      <th>Kolam Pendederan 2</th>
+      <th>Tanggal Tebar Benih</th>
+      <th>Tanggal Panen</th>
+      <th>Dibuat Oleh</th>
+    </tr>
+  </thead>
+  <tbody id="t2c"></tbody>
+</table>
+
+<!-- Modal Tambah Data -->
+<div id="modal2" class="hidden">
+  <form id="form2">
+    <h4>Tambah Data Pendederan</h4>
+    <label>No: <input name="no" required></label><br>
+    <label>Asal Kolam Induk: <input name="asalKolamInduk" required></label><br>
+    <label>Hasil Panen Larva: <input type="number" name="hasilPanenLarva" required></label><br>
+    <label>Kolam Pendederan 1: <input name="kolamPendederan1" required></label><br>
+    <label>Tanggal Tebar Larva: <input type="date" name="tanggalTebarLarva" required></label><br>
+    <label>Hasil Panen Pendederan 1: <input type="number" name="hasilPanenPendederan1" required></label><br>
+    <label>Kolam Pendederan 2: <input name="kolamPendederan2" required></label><br>
+    <label>Tanggal Tebar Benih: <input type="date" name="tanggalTebarBenih" required></label><br>
+    <button type="submit">Simpan</button>
+    <button type="button" id="closeModal2">Batal</button>
+  </form>
+</div>
+
+<script>
+  // ======= Firebase Config =======
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxxxx...",
+    authDomain: "pendederanikan.firebaseapp.com",
+    databaseURL: "https://pendederanikan-default-rtdb.firebaseio.com",
+    projectId: "pendederanikan",
+    storageBucket: "pendederanikan.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  const dbRefPath = 'pendederan';
+
+  let currentAdmin2 = null;
+  const loginInfo2 = document.getElementById('loginInfo2');
+
+  function calcSR(panen1, larva){ return larva===0?0:((panen1/larva)*100).toFixed(2); }
+
+  // ===== Login / Logout =====
+  document.getElementById('loginBtn2').addEventListener('click', ()=>{
+    const sel = document.getElementById('adminSelect2').value;
+    if(!sel){ alert('Pilih admin'); return; }
+    currentAdmin2 = sel; loginInfo2.textContent='Login sebagai: '+sel;
+  });
+  document.getElementById('logoutBtn2').addEventListener('click', ()=>{
+    currentAdmin2=null; document.getElementById('adminSelect2').value=''; loginInfo2.textContent='Belum login'; 
+    alert('Logout berhasil');
+  });
+
+  // ===== Modal Tambah Data =====
+  document.getElementById('openAdd2').addEventListener('click', ()=>{ 
+    document.getElementById('modal2').classList.remove('hidden'); 
+  });
+  document.getElementById('closeModal2').addEventListener('click', ()=>{ 
+    document.getElementById('modal2').classList.add('hidden'); 
+    document.getElementById('form2').reset(); 
+  });
+
+  document.getElementById('form2').addEventListener('submit', e=>{
+    e.preventDefault();
+    if(!database) return alert('Firebase belum dikonfigurasi');
+
+    const fd = new FormData(e.target); const obj={};
+    fd.forEach((v,k)=>obj[k]=v);
+    obj.tanggalPanenPendederan1 = new Date(new Date(obj.tanggalTebarLarva).getTime()+20*24*60*60*1000).toISOString();
+    obj.tanggalPanenPendederan2 = new Date(new Date(obj.tanggalTebarBenih).getTime()+30*24*60*60*1000).toISOString();
+    obj.srPendederan1 = calcSR(Number(obj.hasilPanenPendederan1), Number(obj.hasilPanenLarva));
+    obj.createdBy = currentAdmin2 || 'publik';
+    obj.createdAt = new Date().toISOString();
+
+    database.ref(dbRefPath).push().set(obj).then(()=>{
+      alert('Data tersimpan di server');
+      e.target.reset();
+      document.getElementById('modal2').classList.add('hidden');
+      renderData();
+    }).catch(err=>{ alert('Gagal menyimpan: '+err); });
+  });
+
+  // ===== Render Data =====
+  function snapshotToArray(snap){ 
+    const val = snap.val()||{}; 
+    return Object.keys(val).map(k=>({ id:k, ...val[k] })); 
+  }
+
+  function renderData(){
+    database.ref(dbRefPath).once('value').then(snap=>{
+      const arr = snapshotToArray(snap);
+      const t2b = document.getElementById('t2b');
+      const t2c = document.getElementById('t2c');
+      t2b.innerHTML=''; t2c.innerHTML='';
+
+      arr.forEach(d=>{
+        const tr1 = document.createElement('tr');
+        tr1.innerHTML = `<td>${d.no}</td><td>${d.asalKolamInduk}</td><td>${d.hasilPanenLarva}</td><td>${d.kolamPendederan1}</td><td>${new Date(d.tanggalTebarLarva).toLocaleDateString()}</td><td>${new Date(d.tanggalPanenPendederan1).toLocaleDateString()}</td><td>${d.srPendederan1}</td><td>${d.createdBy}</td>`;
+        t2b.appendChild(tr1);
+
+        const tr2 = document.createElement('tr');
+        tr2.innerHTML = `<td>${d.no}</td><td>${d.asalKolamInduk}</td><td>${d.hasilPanenPendederan1}</td><td>${d.srPendederan1}</td><td>${d.kolamPendederan2}</td><td>${new Date(d.tanggalTebarBenih).toLocaleDateString()}</td><td>${new Date(d.tanggalPanenPendederan2).toLocaleDateString()}</td><td>${d.createdBy}</td>`;
+        t2c.appendChild(tr2);
+      });
+    });
+  }
+
+  renderData();
+
+  // ===== Export CSV & Share WA =====
+  function downloadCSV(rows, filename){
+    const csv = rows.map(r=>r
